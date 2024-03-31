@@ -47,7 +47,13 @@ func New(cfg *config.Config, state *state.State) *Platforms {
 	}
 
 	if len(enabledPlatformsSorted) == 0 {
-		enabledPlatformsSorted = enabledPlatforms
+		for _, field := range platformsFields {
+			if platformsValue.FieldByName(field.Name).FieldByName("Enabled").Bool() {
+				name := strings.ToLower(field.Name)
+				method := strings.ToLower(platformsValue.FieldByName(field.Name).FieldByName("Method").String())
+				enabledPlatformsSorted = append(enabledPlatformsSorted, fmt.Sprintf("%s_%s", name, method))
+			}
+		}
 	}
 
 	return &Platforms{

@@ -178,7 +178,7 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 }
 
 func (p *Platform) scrape() *api {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://kick.com/api/v1/channels/%s", p.cfg.Platforms.Kick.Channel), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v1/channels/%s", p.cfg.Platforms.Kick.URL, p.cfg.Platforms.Kick.Channel), nil)
 	if err != nil {
 		slog.Error("unable to create request",
 			p.prefix,
@@ -196,6 +196,10 @@ func (p *Platform) scrape() *api {
 			"accept-language",
 			"user-agent",
 		},
+	}
+
+	if p.cfg.Platforms.Kick.Authorization != "" {
+		req.Header.Add("Authorization", p.cfg.Platforms.Kick.Authorization)
 	}
 
 	resp, err := p.httpClient.Do(req)

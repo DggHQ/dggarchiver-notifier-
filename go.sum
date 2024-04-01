@@ -13,6 +13,8 @@ github.com/DggHQ/dggarchiver-config v0.0.0-20231116090443-72f14df9bf43 h1:28IiX5
 github.com/DggHQ/dggarchiver-config v0.0.0-20231116090443-72f14df9bf43/go.mod h1:HjVjaNH6oZHdn1BUW4b6f8HvC9VtsLMUCvkp/V0bplY=
 github.com/DggHQ/dggarchiver-config v0.0.0-20240202181241-069822c2115e h1:efu+x8f0LPQEQ5n/F+kU56Xp/3LyfSzj6JpmccHnsgY=
 github.com/DggHQ/dggarchiver-config v0.0.0-20240202181241-069822c2115e/go.mod h1:1awxjCT6+Lvp8OLvrGrz4XOKrhluhRnIB1tNsRbyLIE=
+github.com/DggHQ/dggarchiver-config v0.0.0-20240401042000-28d07d0741c7 h1:V0/zJY/LtwaNV5FfOALfN0gXA9euqPTuo190jSjjuug=
+github.com/DggHQ/dggarchiver-config v0.0.0-20240401042000-28d07d0741c7/go.mod h1:1awxjCT6+Lvp8OLvrGrz4XOKrhluhRnIB1tNsRbyLIE=
 github.com/DggHQ/dggarchiver-model v0.0.0-20230525000132-7fa749218fac h1:6HqVSJj+dA6slKyeCrB3Z+6a4RlcgIPTayl7azlckXg=
 github.com/DggHQ/dggarchiver-model v0.0.0-20230525000132-7fa749218fac/go.mod h1:KPXeH8tl5G8xxCz2LdBq5dO1gfSrehCeDMtiCr8MFQg=
 github.com/DggHQ/dggarchiver-model v0.0.0-20240202175036-7f6d338794fe h1:lFOJTdWqKfp+AZwqc0K59hojY4w8tV/l69BdAvroaUE=

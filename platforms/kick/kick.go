@@ -17,6 +17,7 @@ import (
 	"github.com/DggHQ/dggarchiver-notifier/util"
 	http "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -68,7 +69,7 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 	jar := tls_client.NewCookieJar()
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeoutSeconds(30),
-		tls_client.WithClientProfile(tls_client.Chrome_110),
+		tls_client.WithClientProfile(profiles.Chrome_110),
 		tls_client.WithNotFollowRedirects(),
 		tls_client.WithCookieJar(jar),
 	}

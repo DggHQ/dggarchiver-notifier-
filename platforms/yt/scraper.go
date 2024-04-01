@@ -91,7 +91,7 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 		go func() {
 			info := videoSchemaMicrodata{}
 
-			h.ForEachWithBreak("[itemprop]", func(i int, h *colly.HTMLElement) bool {
+			h.ForEachWithBreak("[itemprop]", func(_ int, h *colly.HTMLElement) bool {
 				prop := h.Attr("itemprop")
 				content := h.Attr("content")
 				if content == "" {
@@ -104,46 +104,56 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 						info.Invalid = true
 						return false
 					}
-					info.Title = content
+					if h.Name == "meta" {
+						info.Title = content
+					}
 				case "datePublished":
 					if content == "" {
 						info.Invalid = true
 						return false
 					}
-					pubTimeParsed, err := time.Parse("2006-01-02T15:04:05-07:00", content)
-					if err != nil {
-						info.Invalid = true
-						return false
+					if h.Name == "meta" {
+						pubTimeParsed, err := time.Parse("2006-01-02T15:04:05-07:00", content)
+						if err != nil {
+							info.Invalid = true
+							return false
+						}
+						info.PubTime = pubTimeParsed.UTC().Format(time.RFC3339)
 					}
-					info.PubTime = pubTimeParsed.UTC().Format(time.RFC3339)
 				case "startDate":
 					if content == "" {
 						info.Invalid = true
 						return false
 					}
-					startTimeParsed, err := time.Parse("2006-01-02T15:04:05-07:00", content)
-					if err != nil {
-						info.Invalid = true
-						return false
+					if h.Name == "meta" {
+						startTimeParsed, err := time.Parse("2006-01-02T15:04:05-07:00", content)
+						if err != nil {
+							info.Invalid = true
+							return false
+						}
+						info.StartTime = startTimeParsed.UTC().Format(time.RFC3339)
 					}
-					info.StartTime = startTimeParsed.UTC().Format(time.RFC3339)
 				case "endDate":
 					if content == "" {
 						info.Invalid = true
 						return false
 					}
-					endTimeParsed, err := time.Parse("2006-01-02T15:04:05-07:00", content)
-					if err != nil {
-						info.Invalid = true
-						return false
+					if h.Name == "meta" {
+						endTimeParsed, err := time.Parse("2006-01-02T15:04:05-07:00", content)
+						if err != nil {
+							info.Invalid = true
+							return false
+						}
+						info.EndTime = endTimeParsed.UTC().Format(time.RFC3339)
 					}
-					info.EndTime = endTimeParsed.UTC().Format(time.RFC3339)
 				case "thumbnailUrl":
 					if content == "" {
 						info.Invalid = true
 						return false
 					}
-					info.Thumbnail = content
+					if h.Name == "link" {
+						info.Thumbnail = content
+					}
 				}
 
 				return true

@@ -94,7 +94,9 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 	})
 
 	c.OnScraped(func(_ *colly.Response) {
-		idDoneChan <- struct{}{}
+		go func() {
+			p.idDoneChan <- struct{}{}
+		}()
 	})
 
 	c2.OnHTML("div[itemscope]", func(h *colly.HTMLElement) {
@@ -174,7 +176,9 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 	})
 
 	c2.OnScraped(func(_ *colly.Response) {
-		infoDoneChan <- struct{}{}
+		go func() {
+			p.infoDoneChan <- struct{}{}
+		}()
 	})
 
 	return &p
@@ -208,6 +212,13 @@ func (p *Scraper) CheckLivestream(l *lua.LState) error {
 				vid, err := p.getVideoInfo(id)
 				if err != nil {
 					return err
+				}
+				if vid == nil {
+					slog.Warn("no info found",
+						p.prefix,
+						slog.String("id", id),
+					)
+					return nil
 				}
 
 				vod := &dggarchivermodel.VOD{
@@ -292,7 +303,7 @@ func (p *Scraper) getVideoInfo(id string) (*videoSchemaMicrodata, error) {
 
 	select {
 	case <-p.infoDoneChan:
-		return nil, ErrUnableToParseInfo
+		return nil, nil
 	case data := <-p.infoChan:
 		if data.Invalid {
 			return nil, ErrUnableToParseInfo

@@ -34,15 +34,17 @@ type videoSchemaMicrodata struct {
 }
 
 type Scraper struct {
-	c         *colly.Collector
-	c2        *colly.Collector
-	index     int
-	idChan    chan string
-	infoChan  chan videoSchemaMicrodata
-	cfg       *config.Config
-	state     *state.State
-	prefix    slog.Attr
-	sleepTime time.Duration
+	c            *colly.Collector
+	c2           *colly.Collector
+	index        int
+	idChan       chan string
+	idDoneChan   chan struct{}
+	infoChan     chan videoSchemaMicrodata
+	infoDoneChan chan struct{}
+	cfg          *config.Config
+	state        *state.State
+	prefix       slog.Attr
+	sleepTime    time.Duration
 }
 
 // New returns a new YouTube Scraper platform struct
@@ -57,15 +59,19 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 	c2.AllowURLRevisit = true
 
 	idChan := make(chan string)
+	idDoneChan := make(chan struct{})
 	infoChan := make(chan videoSchemaMicrodata)
+	infoDoneChan := make(chan struct{})
 
 	p := Scraper{
-		c:        c,
-		c2:       c2,
-		idChan:   idChan,
-		infoChan: infoChan,
-		cfg:      cfg,
-		state:    state,
+		c:            c,
+		c2:           c2,
+		idChan:       idChan,
+		idDoneChan:   idDoneChan,
+		infoChan:     infoChan,
+		infoDoneChan: infoDoneChan,
+		cfg:          cfg,
+		state:        state,
 		prefix: slog.Group("platform",
 			slog.String("name", platformName),
 			slog.String("method", scraperMethod),
@@ -85,6 +91,10 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 				idChan <- ""
 			}
 		}()
+	})
+
+	c.OnScraped(func(_ *colly.Response) {
+		idDoneChan <- struct{}{}
 	})
 
 	c2.OnHTML("div[itemscope]", func(h *colly.HTMLElement) {
@@ -161,6 +171,10 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 
 			p.infoChan <- info
 		}()
+	})
+
+	c2.OnScraped(func(_ *colly.Response) {
+		infoDoneChan <- struct{}{}
 	})
 
 	return &p
@@ -262,7 +276,13 @@ func (p *Scraper) scrape() string {
 		return ""
 	}
 
-	return <-p.idChan
+	select {
+	case <-p.idDoneChan:
+		return ""
+	case id := <-p.idChan:
+		<-p.idDoneChan
+		return id
+	}
 }
 
 func (p *Scraper) getVideoInfo(id string) (*videoSchemaMicrodata, error) {
@@ -270,10 +290,14 @@ func (p *Scraper) getVideoInfo(id string) (*videoSchemaMicrodata, error) {
 		return nil, err
 	}
 
-	data := <-p.infoChan
-	if data.Invalid {
+	select {
+	case <-p.infoDoneChan:
 		return nil, ErrUnableToParseInfo
+	case data := <-p.infoChan:
+		if data.Invalid {
+			return nil, ErrUnableToParseInfo
+		}
+		<-p.infoDoneChan
+		return &data, nil
 	}
-
-	return &data, nil
 }

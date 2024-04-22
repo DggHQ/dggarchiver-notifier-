@@ -202,13 +202,6 @@ func (p *Scraper) CheckLivestream(l *lua.LState) error {
 	if id != "" {
 		if !slices.Contains(p.state.SentVODs, fmt.Sprintf("youtube:%s", id)) {
 			if p.state.CheckPriority("YouTube", p.cfg) {
-				slog.Info("stream found",
-					p.prefix,
-					slog.String("id", id),
-				)
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallReceiveFunction(l, id)
-				}
 				vid, err := p.getVideoInfo(id)
 				if err != nil {
 					return err
@@ -219,6 +212,14 @@ func (p *Scraper) CheckLivestream(l *lua.LState) error {
 						slog.String("id", id),
 					)
 					return nil
+				}
+
+				slog.Info("stream found",
+					p.prefix,
+					slog.String("id", id),
+				)
+				if p.cfg.Plugins.Enabled {
+					util.LuaCallReceiveFunction(l, id)
 				}
 
 				vod := &dggarchivermodel.VOD{

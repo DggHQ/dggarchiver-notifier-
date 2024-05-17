@@ -25,6 +25,7 @@ var (
 )
 
 type videoSchemaMicrodata struct {
+	Cached    bool
 	Invalid   bool
 	Title     string
 	PubTime   string
@@ -34,17 +35,15 @@ type videoSchemaMicrodata struct {
 }
 
 type Scraper struct {
-	c            *colly.Collector
-	c2           *colly.Collector
-	index        int
-	idChan       chan string
-	idDoneChan   chan struct{}
-	infoChan     chan videoSchemaMicrodata
-	infoDoneChan chan struct{}
-	cfg          *config.Config
-	state        *state.State
-	prefix       slog.Attr
-	sleepTime    time.Duration
+	c         *colly.Collector
+	c2        *colly.Collector
+	index     int
+	idChan    chan string
+	infoChan  chan videoSchemaMicrodata
+	cfg       *config.Config
+	state     *state.State
+	prefix    slog.Attr
+	sleepTime time.Duration
 }
 
 // New returns a new YouTube Scraper platform struct
@@ -59,19 +58,15 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 	c2.AllowURLRevisit = true
 
 	idChan := make(chan string)
-	idDoneChan := make(chan struct{})
 	infoChan := make(chan videoSchemaMicrodata)
-	infoDoneChan := make(chan struct{})
 
 	p := Scraper{
-		c:            c,
-		c2:           c2,
-		idChan:       idChan,
-		idDoneChan:   idDoneChan,
-		infoChan:     infoChan,
-		infoDoneChan: infoDoneChan,
-		cfg:          cfg,
-		state:        state,
+		c:        c,
+		c2:       c2,
+		idChan:   idChan,
+		infoChan: infoChan,
+		cfg:      cfg,
+		state:    state,
 		prefix: slog.Group("platform",
 			slog.String("name", platformName),
 			slog.String("method", scraperMethod),
@@ -85,23 +80,26 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 
 	c.OnHTML("link[href][rel='canonical']", func(h *colly.HTMLElement) {
 		go func() {
-			if p.index != -1 {
-				idChan <- ytRegexp.FindStringSubmatch(h.Attr("href"))[1]
-			} else {
-				idChan <- ""
-			}
-		}()
-	})
+			id := ""
 
-	c.OnScraped(func(_ *colly.Response) {
-		go func() {
-			p.idDoneChan <- struct{}{}
+			defer func() {
+				p.idChan <- id
+			}()
+
+			if p.index != -1 {
+				id = ytRegexp.FindStringSubmatch(h.Attr("href"))[1]
+			}
 		}()
 	})
 
 	c2.OnHTML("div[itemscope]", func(h *colly.HTMLElement) {
 		go func() {
+			id := h.Request.URL.Query().Get("v")
 			info := videoSchemaMicrodata{}
+
+			defer func() {
+				p.infoChan <- info
+			}()
 
 			h.ForEachWithBreak("[itemprop]", func(_ int, h *colly.HTMLElement) bool {
 				prop := h.Attr("itemprop")
@@ -111,6 +109,11 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 				}
 
 				switch prop {
+				case "identifier":
+					if content != id {
+						info.Cached = true
+						return false
+					}
 				case "name":
 					if content == "" {
 						info.Invalid = true
@@ -170,14 +173,6 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 
 				return true
 			})
-
-			p.infoChan <- info
-		}()
-	})
-
-	c2.OnScraped(func(_ *colly.Response) {
-		go func() {
-			p.infoDoneChan <- struct{}{}
 		}()
 	})
 
@@ -288,13 +283,8 @@ func (p *Scraper) scrape() string {
 		return ""
 	}
 
-	select {
-	case <-p.idDoneChan:
-		return ""
-	case id := <-p.idChan:
-		<-p.idDoneChan
-		return id
-	}
+	id := <-p.idChan
+	return id
 }
 
 func (p *Scraper) getVideoInfo(id string) (*videoSchemaMicrodata, error) {
@@ -302,14 +292,12 @@ func (p *Scraper) getVideoInfo(id string) (*videoSchemaMicrodata, error) {
 		return nil, err
 	}
 
-	select {
-	case <-p.infoDoneChan:
-		return nil, nil
-	case data := <-p.infoChan:
-		if data.Invalid {
-			return nil, ErrUnableToParseInfo
-		}
-		<-p.infoDoneChan
-		return &data, nil
+	data := <-p.infoChan
+	if data.Invalid {
+		return nil, ErrUnableToParseInfo
 	}
+	if data.Cached {
+		return nil, nil
+	}
+	return &data, nil
 }

@@ -21,7 +21,9 @@ import (
 
 var (
 	ErrUnableToParseInfo = errors.New("unable to parse youtube video page data")
-	ytRegexp             = regexp.MustCompile(`\/watch\?v=([^\"]*)`)
+
+	scrapeTimeout = 10 * time.Second
+	ytRegexp      = regexp.MustCompile(`\/watch\?v=([^\"]*)`)
 )
 
 type videoSchemaMicrodata struct {
@@ -192,12 +194,12 @@ func (p *Scraper) GetSleepTime() time.Duration {
 // CheckLivestream checks for an existing livestream on platform p,
 // and, if found, publishes the info to NATS
 func (p *Scraper) CheckLivestream(l *lua.LState) error {
-	id := p.scrape()
+	id := p.scrape(scrapeTimeout)
 
 	if id != "" {
 		if !slices.Contains(p.state.SentVODs, fmt.Sprintf("youtube:%s", id)) {
 			if p.state.CheckPriority("YouTube", p.cfg) {
-				vid, err := p.getVideoInfo(id)
+				vid, err := p.getVideoInfo(id, scrapeTimeout)
 				if err != nil {
 					return err
 				}
@@ -278,26 +280,34 @@ func (p *Scraper) CheckLivestream(l *lua.LState) error {
 	return nil
 }
 
-func (p *Scraper) scrape() string {
+func (p *Scraper) scrape(timeout time.Duration) string {
 	if err := p.c.Visit(fmt.Sprintf("https://youtube.com/channel/%s/live?hl=en", p.cfg.Platforms.YouTube.Channel)); err != nil {
 		return ""
 	}
 
-	id := <-p.idChan
-	return id
+	select {
+	case id := <-p.idChan:
+		return id
+	case <-time.After(timeout):
+		return ""
+	}
 }
 
-func (p *Scraper) getVideoInfo(id string) (*videoSchemaMicrodata, error) {
+func (p *Scraper) getVideoInfo(id string, timeout time.Duration) (*videoSchemaMicrodata, error) {
 	if err := p.c2.Visit(fmt.Sprintf("https://youtube.com/watch?v=%s", id)); err != nil {
 		return nil, err
 	}
 
-	data := <-p.infoChan
-	if data.Invalid {
-		return nil, ErrUnableToParseInfo
-	}
-	if data.Cached {
+	select {
+	case data := <-p.infoChan:
+		if data.Invalid {
+			return nil, ErrUnableToParseInfo
+		}
+		if data.Cached {
+			return nil, nil
+		}
+		return &data, nil
+	case <-time.After(timeout):
 		return nil, nil
 	}
-	return &data, nil
 }

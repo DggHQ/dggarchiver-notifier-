@@ -72,7 +72,7 @@ func (p *Platforms) Start() {
 			slog.Int("refresh_time", p.cfg.Platforms.YouTube.RefreshTime),
 		)
 		p.wg.Add(1)
-		implementation.LaunchLoop(p.cfg, imp)
+		implementation.LaunchLoop(imp)
 
 		time.Sleep(time.Second * 1)
 	}

@@ -2,13 +2,10 @@ package implementation
 
 import (
 	"log/slog"
-	"os"
 	"time"
 
 	config "github.com/DggHQ/dggarchiver-config/notifier"
 	"github.com/DggHQ/dggarchiver-notifier/state"
-	luaLibs "github.com/vadv/gopher-lua-libs"
-	lua "github.com/yuin/gopher-lua"
 )
 
 type newPlatformFunc func(*config.Config, *state.State) Platform
@@ -16,26 +13,16 @@ type newPlatformFunc func(*config.Config, *state.State) Platform
 var Map = map[string]newPlatformFunc{}
 
 type Platform interface {
-	CheckLivestream(*lua.LState) error
+	CheckLivestream() error
 	GetPrefix() slog.Attr
 	GetSleepTime() time.Duration
 }
 
-func LaunchLoop(cfg *config.Config, imp Platform) {
+func LaunchLoop(imp Platform) {
 	prefix := imp.GetPrefix()
 	sleep := imp.GetSleepTime()
 
 	go func() {
-		l := lua.NewState()
-		defer l.Close()
-		if cfg.Plugins.Enabled {
-			luaLibs.Preload(l)
-			if err := l.DoFile(cfg.Plugins.PathToPlugin); err != nil {
-				slog.Error("unable to load lua script", slog.Any("err", err))
-				os.Exit(1)
-			}
-		}
-
 		timeout := 0
 
 		for {
@@ -46,7 +33,7 @@ func LaunchLoop(cfg *config.Config, imp Platform) {
 				)
 				time.Sleep(time.Second * time.Duration(timeout))
 			}
-			err := imp.CheckLivestream(l)
+			err := imp.CheckLivestream()
 			if err != nil {
 				slog.Error("error occurred while checking, restarting the loop",
 					prefix,

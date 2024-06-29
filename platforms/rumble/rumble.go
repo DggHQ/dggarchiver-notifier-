@@ -12,11 +12,12 @@ import (
 
 	config "github.com/DggHQ/dggarchiver-config/notifier"
 	dggarchivermodel "github.com/DggHQ/dggarchiver-model"
+	"github.com/DggHQ/dggarchiver-notifier/notifications"
 	"github.com/DggHQ/dggarchiver-notifier/platforms/implementation"
 	"github.com/DggHQ/dggarchiver-notifier/state"
 	"github.com/DggHQ/dggarchiver-notifier/util"
+	"github.com/containrrr/shoutrrr/pkg/types"
 	"github.com/gocolly/colly/v2"
-	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/exp/slices"
 )
 
@@ -140,7 +141,7 @@ func (p *Platform) GetSleepTime() time.Duration {
 
 // CheckLivestream checks for an existing livestream on platform p,
 // and, if found, publishes the info to NATS
-func (p *Platform) CheckLivestream(l *lua.LState) error {
+func (p *Platform) CheckLivestream() error {
 	vod := p.scrape()
 
 	if vod != nil {
@@ -150,8 +151,13 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 					p.prefix,
 					slog.String("id", vod.ID),
 				)
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallReceiveFunction(l, vod.ID)
+				if p.cfg.Notifications.Condition("receive") {
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Rumble", vod.ID), &types.Params{
+						"title": "Received stream",
+					})
+					for err := range errs {
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.ID), slog.Any("err", err))
+					}
 				}
 
 				p.state.CurrentStreams.Rumble = *vod
@@ -175,8 +181,13 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 					return nil
 				}
 
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallSendFunction(l, vod)
+				if p.cfg.Notifications.Condition("send") {
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetSendMessage(vod), &types.Params{
+						"title": "Sent stream",
+					})
+					for err := range errs {
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.ID), slog.Any("err", err))
+					}
 				}
 				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.ID))
 				p.state.Dump()

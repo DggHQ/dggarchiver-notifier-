@@ -3,7 +3,7 @@ module github.com/DggHQ/dggarchiver-notifier
 go 1.21
 
 require (
-	github.com/DggHQ/dggarchiver-config v0.0.0-20240401042000-28d07d0741c7
+	github.com/DggHQ/dggarchiver-config v0.0.0-20240629020352-2453b5b76912
 	github.com/DggHQ/dggarchiver-model v0.0.0-20240202175036-7f6d338794fe
 	github.com/bogdanfinn/fhttp v0.5.27
 	github.com/bogdanfinn/tls-client v1.7.2
@@ -35,6 +35,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cheggaaa/pb/v3 v3.1.5 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
+	github.com/containrrr/shoutrrr v0.8.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect

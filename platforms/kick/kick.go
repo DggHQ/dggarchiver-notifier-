@@ -12,13 +12,14 @@ import (
 
 	config "github.com/DggHQ/dggarchiver-config/notifier"
 	dggarchivermodel "github.com/DggHQ/dggarchiver-model"
+	"github.com/DggHQ/dggarchiver-notifier/notifications"
 	"github.com/DggHQ/dggarchiver-notifier/platforms/implementation"
 	"github.com/DggHQ/dggarchiver-notifier/state"
 	"github.com/DggHQ/dggarchiver-notifier/util"
 	http "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
-	lua "github.com/yuin/gopher-lua"
+	"github.com/containrrr/shoutrrr/pkg/types"
 )
 
 const (
@@ -102,7 +103,7 @@ func (p *Platform) GetSleepTime() time.Duration {
 
 // CheckLivestream checks for an existing livestream on platform p,
 // and, if found, publishes the info to NATS
-func (p *Platform) CheckLivestream(l *lua.LState) error {
+func (p *Platform) CheckLivestream() error {
 	stream := p.scrape()
 
 	if stream != nil && stream.Livestream.IsLive {
@@ -112,8 +113,13 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 					p.prefix,
 					slog.Int("id", stream.Livestream.ID),
 				)
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallReceiveFunction(l, fmt.Sprintf("%d", stream.Livestream.ID))
+				if p.cfg.Notifications.Condition("receive") {
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Kick", fmt.Sprint(stream.Livestream.ID)), &types.Params{
+						"title": "Received stream",
+					})
+					for err := range errs {
+						slog.Warn("unable to send notification", p.prefix, slog.Int("id", stream.Livestream.ID), slog.Any("err", err))
+					}
 				}
 
 				vod := &dggarchivermodel.VOD{
@@ -148,8 +154,13 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 					return nil
 				}
 
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallSendFunction(l, vod)
+				if p.cfg.Notifications.Condition("send") {
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetSendMessage(vod), &types.Params{
+						"title": "Sent stream",
+					})
+					for err := range errs {
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.ID), slog.Any("err", err))
+					}
 				}
 				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("kick:%s", vod.ID))
 				p.state.Dump()

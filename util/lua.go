@@ -1,8 +1,9 @@
 package util
 
 import (
+	"log/slog"
+
 	dggarchivermodel "github.com/DggHQ/dggarchiver-model"
-	"github.com/apex/log"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
 )
@@ -25,13 +26,13 @@ func LuaCallReceiveFunction(l *lua.LState, vod string) *LuaResponse {
 		NRet:    0,
 		Protect: true,
 	}, luaVOD); err != nil {
-		log.Debugf("Wasn't able to access the \"OnReceive\" function of the Lua script, skipping: %s", err)
+		slog.Debug("unable to access the \"OnReceive\" function of the Lua script", slog.Any("err", err))
 		return nil
 	}
 
 	if result.Filled {
 		if result.Error {
-			log.Errorf("Wasn't able to execute the \"OnReceive\" function of the Lua script: %s", result.Message)
+			slog.Debug("unable to execute the \"OnReceive\" function of the Lua script", slog.Any("err", result.Message))
 			return nil
 		}
 	}
@@ -50,13 +51,13 @@ func LuaCallSendFunction(l *lua.LState, vod *dggarchivermodel.VOD) *LuaResponse 
 		NRet:    0,
 		Protect: true,
 	}, luaVOD); err != nil {
-		log.Debugf("Wasn't able to access the \"OnSend\" function of the Lua script, skipping: %s", err)
+		slog.Debug("unable to access the \"OnSend\" function of the Lua script", slog.Any("err", err))
 		return nil
 	}
 
 	if result.Filled {
 		if result.Error {
-			log.Errorf("Wasn't able to execute the \"OnSend\" function of the Lua script: %s", result.Message)
+			slog.Debug("unable to execute the \"OnSend\" function of the Lua script", slog.Any("err", result.Message))
 			return nil
 		}
 	}

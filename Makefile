@@ -1,4 +1,4 @@
-.PHONY: build ko
+.PHONY: build ko lint
 
 GOFLAGS := -tags netgo
 
@@ -17,3 +17,6 @@ build:
 
 ko:
 	ko build --local --base-import-paths
+
+lint:
+	golangci-lint run

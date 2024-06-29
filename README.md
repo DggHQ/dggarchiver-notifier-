@@ -4,7 +4,7 @@ This is the notifier service of the dggarchiver service that triggers download w
 ## Features
 
 1. Supported livestream platforms:
-   - YouTube (Web scraping + API/Just API)
+   - YouTube (Web scraping or API)
    - Rumble (Web scraping)
    - Kick (API scraping)
 2. Platform priority option (able to ignore other platforms if there's already a stream from a prioritised platform)
@@ -37,27 +37,27 @@ notifier:
   platforms:
     youtube:
       enabled: yes
+      method: scraper # mandatory field, parsing method, will default to 'scraper', can be set to 'api' or 'scraper'
       downloader: ytarchive # optional field, will default to yt-dlp, can be set to either 'yt-dlp', 'yt-dlp/piped' or 'ytarchive'
       restream_priority: 1 # optional field, sets the platform priority (ignore if there's already a stream going from a higher priority platform)
       google_credentials: client_secret.json # mandatory field, google credentials file with enabled YouTube Data API
       channel: UCSJ4gkVC6NrvII8umztf0Ow # mandatory field, YouTube channel ID
-      scraper_refresh: 5 # scraper livestream check time in minutes, set to 0 to disable
-      api_refresh: 0 # API livestream check time in minutes, set to 0 to disable
-      healthcheck: https://hc-ping.com/your-uuid-here # healthcheck URL
+      refresh_time: 5 # mandatory field, livestream check time in minutes, set to 0 to disable
+      healthcheck: https://hc-ping.com/your-uuid-here # optional field, healthcheck URL
     rumble:
       enabled: yes
       downloader: yt-dlp # optional field, only yt-dlp supported for now
       restream_priority: 3 # optional field, sets the platform priority (ignore if there's already a stream going from a higher priority platform)
       channel: Destiny # mandatory field, Rumble channel ID
-      scraper_refresh: 5 # scraper livestream check time in minutes
-      healthcheck: https://hc-ping.com/your-uuid-here # healthcheck URL
+      refresh_time: 5 # mandatory field, livestream check time in minutes
+      healthcheck: https://hc-ping.com/your-uuid-here # optional field, healthcheck URL
     kick:
       enabled: yes
       downloader: N_m3u8DL-RE # optional field, will default to yt-dlp, can be set to either 'yt-dlp' or 'N_m3u8DL-RE'
       restream_priority: 2 # optional field, sets the platform priority (ignore if there's already a stream going from a higher priority platform)
       channel: destiny # mandatory field, Kick channel ID
-      scraper_refresh: 5 # scraper livestream check time in minutes
-      healthcheck: https://hc-ping.com/your-uuid-here # healthcheck URL
+      refresh_time: 5 # mandatory field, livestream check time in minutes
+      healthcheck: https://hc-ping.com/your-uuid-here # optional field, healthcheck URL
       proxy_url: http://proxy:80 # optional field, proxy url in case kick is being cringe
   plugins:
     enabled: no

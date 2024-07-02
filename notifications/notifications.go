@@ -27,7 +27,7 @@ var (
 
 type n struct {
 	Platform string
-	ID       string
+	VID      string
 }
 
 func GetReceiveMessage(platform, id string) string {
@@ -35,7 +35,7 @@ func GetReceiveMessage(platform, id string) string {
 
 	_ = receiveTemplate.Execute(&b, n{
 		Platform: platform,
-		ID:       id,
+		VID:      id,
 	})
 
 	return b.String()

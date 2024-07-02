@@ -2,20 +2,22 @@ package notifications
 
 import (
 	"bytes"
+	"strings"
 	"text/template"
 
 	dggarchivermodel "github.com/DggHQ/dggarchiver-model"
 )
 
-const (
-	receive string = `
-		Platform: {{ .Platform }}
-		ID: {{ .ID }}
-	`
-	send string = `
-		Platform: {{ .Platform }}
-		ID: {{ .ID }}
-	`
+var (
+	receive = strings.Join([]string{
+		"Platform: {{ .Platform }}",
+		"ID: {{ .VID }}",
+	}, "\n")
+
+	send = strings.Join([]string{
+		"Platform: {{ .Platform }}",
+		"ID: {{ .VID }}",
+	}, "\n")
 )
 
 var (

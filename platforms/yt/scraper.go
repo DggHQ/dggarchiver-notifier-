@@ -228,7 +228,7 @@ func (p *Scraper) CheckLivestream() error {
 				vod := &dggarchivermodel.VOD{
 					Platform:   "youtube",
 					Downloader: p.cfg.Platforms.YouTube.Downloader,
-					ID:         id,
+					VID:        id,
 					PubTime:    vid.PubTime,
 					Title:      vid.Title,
 					StartTime:  vid.StartTime,
@@ -242,7 +242,7 @@ func (p *Scraper) CheckLivestream() error {
 				if err != nil {
 					slog.Error("unable to marshal vod",
 						p.prefix,
-						slog.String("id", vod.ID),
+						slog.String("id", vod.VID),
 						slog.Any("err", err),
 					)
 					return nil
@@ -251,7 +251,7 @@ func (p *Scraper) CheckLivestream() error {
 				if err = p.cfg.NATS.NatsConnection.Publish(fmt.Sprintf("%s.job", p.cfg.NATS.Topic), bytes); err != nil {
 					slog.Error("unable to publish message",
 						p.prefix,
-						slog.String("id", vod.ID),
+						slog.String("id", vod.VID),
 						slog.Any("err", err),
 					)
 					return nil
@@ -262,10 +262,10 @@ func (p *Scraper) CheckLivestream() error {
 						"title": "Sent stream",
 					})
 					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.ID), slog.Any("err", err))
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
 					}
 				}
-				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("youtube:%s", vod.ID))
+				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("youtube:%s", vod.VID))
 				p.state.Dump()
 			} else {
 				slog.Info("streaming on a different platform",

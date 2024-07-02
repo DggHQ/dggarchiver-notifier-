@@ -86,7 +86,7 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 					vodChan <- &dggarchivermodel.VOD{
 						Platform:    "rumble",
 						Downloader:  cfg.Platforms.Rumble.Downloader,
-						ID:          embedData.EmbedID,
+						VID:         embedData.EmbedID,
 						PlaybackURL: fmt.Sprintf("https://rumble.com%s", link),
 						Title:       embedData.Title,
 						StartTime:   time.Now().Format(time.RFC3339),
@@ -112,7 +112,7 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 					vodChan <- &dggarchivermodel.VOD{
 						Platform:    "rumble",
 						Downloader:  cfg.Platforms.Rumble.Downloader,
-						ID:          embedData.EmbedID,
+						VID:         embedData.EmbedID,
 						PlaybackURL: link,
 						Title:       embedData.Title,
 						StartTime:   time.Now().Format(time.RFC3339),
@@ -145,18 +145,18 @@ func (p *Platform) CheckLivestream() error {
 	vod := p.scrape()
 
 	if vod != nil {
-		if !slices.Contains(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.ID)) {
+		if !slices.Contains(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.VID)) {
 			if p.state.CheckPriority("Rumble", p.cfg) {
 				slog.Info("stream found",
 					p.prefix,
-					slog.String("id", vod.ID),
+					slog.String("id", vod.VID),
 				)
 				if p.cfg.Notifications.Condition("receive") {
-					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Rumble", vod.ID), &types.Params{
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Rumble", vod.VID), &types.Params{
 						"title": "Received stream",
 					})
 					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.ID), slog.Any("err", err))
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
 					}
 				}
 
@@ -166,7 +166,7 @@ func (p *Platform) CheckLivestream() error {
 				if err != nil {
 					slog.Error("unable to marshal vod",
 						p.prefix,
-						slog.String("id", vod.ID),
+						slog.String("id", vod.VID),
 						slog.Any("err", err),
 					)
 					return nil
@@ -175,7 +175,7 @@ func (p *Platform) CheckLivestream() error {
 				if err = p.cfg.NATS.NatsConnection.Publish(fmt.Sprintf("%s.job", p.cfg.NATS.Topic), bytes); err != nil {
 					slog.Error("unable to publish message",
 						p.prefix,
-						slog.String("id", vod.ID),
+						slog.String("id", vod.VID),
 						slog.Any("err", err),
 					)
 					return nil
@@ -186,21 +186,21 @@ func (p *Platform) CheckLivestream() error {
 						"title": "Sent stream",
 					})
 					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.ID), slog.Any("err", err))
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
 					}
 				}
-				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.ID))
+				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.VID))
 				p.state.Dump()
 			} else {
 				slog.Info("streaming on a different platform",
 					p.prefix,
-					slog.String("id", vod.ID),
+					slog.String("id", vod.VID),
 				)
 			}
 		} else {
 			slog.Info("already sent",
 				p.prefix,
-				slog.String("id", vod.ID),
+				slog.String("id", vod.VID),
 			)
 		}
 	} else {

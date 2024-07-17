@@ -102,8 +102,8 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 				p.idChan <- id
 			}()
 
-			if p.index != -1 {
-				id = ytRegexp.FindStringSubmatch(h.Attr("href"))[1]
+			if matches := ytRegexp.FindStringSubmatch(h.Attr("href")); len(matches) > 1 && p.index != -1 {
+				id = matches[1]
 			}
 		}()
 	})

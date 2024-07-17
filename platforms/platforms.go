@@ -20,21 +20,15 @@ type Platforms struct {
 	cfg              *config.Config
 }
 
-func New(cfg *config.Config, state *state.State) *Platforms {
+func New(cfg *config.Config, state *state.State, enabledPlatforms []string) *Platforms {
 	var (
-		enabledPlatforms       = []string{}
 		enabledPlatformsSorted = []string{}
-		count, i               int64
+		count                  = int64(len(enabledPlatforms))
+		i                      int64
 	)
 
 	platformsValue := reflect.ValueOf(cfg.Platforms)
 	platformsFields := reflect.VisibleFields(reflect.TypeOf(cfg.Platforms))
-	for _, field := range platformsFields {
-		if platformsValue.FieldByName(field.Name).FieldByName("Enabled").Bool() {
-			enabledPlatforms = append(enabledPlatforms, field.Name)
-			count++
-		}
-	}
 
 	for i = 1; i < count+1; i++ {
 		for _, field := range enabledPlatforms {
@@ -72,7 +66,7 @@ func (p *Platforms) Start() {
 			slog.Int("refresh_time", p.cfg.Platforms.YouTube.RefreshTime),
 		)
 		p.wg.Add(1)
-		implementation.LaunchLoop(p.cfg, imp)
+		implementation.LaunchLoop(imp)
 
 		time.Sleep(time.Second * 1)
 	}

@@ -12,13 +12,14 @@ import (
 
 	config "github.com/DggHQ/dggarchiver-config/notifier"
 	dggarchivermodel "github.com/DggHQ/dggarchiver-model"
+	"github.com/DggHQ/dggarchiver-notifier/notifications"
 	"github.com/DggHQ/dggarchiver-notifier/platforms/implementation"
 	"github.com/DggHQ/dggarchiver-notifier/state"
 	"github.com/DggHQ/dggarchiver-notifier/util"
 	http "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
-	lua "github.com/yuin/gopher-lua"
+	"github.com/containrrr/shoutrrr/pkg/types"
 )
 
 const (
@@ -102,7 +103,7 @@ func (p *Platform) GetSleepTime() time.Duration {
 
 // CheckLivestream checks for an existing livestream on platform p,
 // and, if found, publishes the info to NATS
-func (p *Platform) CheckLivestream(l *lua.LState) error {
+func (p *Platform) CheckLivestream() error {
 	stream := p.scrape()
 
 	if stream != nil && stream.Livestream.IsLive {
@@ -112,14 +113,19 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 					p.prefix,
 					slog.Int("id", stream.Livestream.ID),
 				)
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallReceiveFunction(l, fmt.Sprintf("%d", stream.Livestream.ID))
+				if p.cfg.Notifications.Condition("receive") {
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Kick", fmt.Sprint(stream.Livestream.ID)), &types.Params{
+						"title": "Received stream",
+					})
+					for err := range errs {
+						slog.Warn("unable to send notification", p.prefix, slog.Int("id", stream.Livestream.ID), slog.Any("err", err))
+					}
 				}
 
 				vod := &dggarchivermodel.VOD{
 					Platform:    "kick",
 					Downloader:  p.cfg.Platforms.Kick.Downloader,
-					ID:          fmt.Sprintf("%d", stream.Livestream.ID),
+					VID:         fmt.Sprintf("%d", stream.Livestream.ID),
 					PlaybackURL: stream.URL,
 					Title:       stream.Livestream.Title,
 					StartTime:   time.Now().Format(time.RFC3339),
@@ -133,7 +139,7 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 				if err != nil {
 					slog.Error("unable to marshal vod",
 						p.prefix,
-						slog.String("id", vod.ID),
+						slog.String("id", vod.VID),
 						slog.Any("err", err),
 					)
 					return nil
@@ -142,16 +148,21 @@ func (p *Platform) CheckLivestream(l *lua.LState) error {
 				if err = p.cfg.NATS.NatsConnection.Publish(fmt.Sprintf("%s.job", p.cfg.NATS.Topic), bytes); err != nil {
 					slog.Error("unable to publish message",
 						p.prefix,
-						slog.String("id", vod.ID),
+						slog.String("id", vod.VID),
 						slog.Any("err", err),
 					)
 					return nil
 				}
 
-				if p.cfg.Plugins.Enabled {
-					util.LuaCallSendFunction(l, vod)
+				if p.cfg.Notifications.Condition("send") {
+					errs := p.cfg.Notifications.Sender.Send(notifications.GetSendMessage(vod), &types.Params{
+						"title": "Sent stream",
+					})
+					for err := range errs {
+						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+					}
 				}
-				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("kick:%s", vod.ID))
+				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("kick:%s", vod.VID))
 				p.state.Dump()
 			} else {
 				slog.Info("streaming on a different platform",

@@ -6,6 +6,8 @@ cloud.google.com/go/compute/metadata v0.2.3/go.mod h1:VAV5nSsACxMJvgaAuX6Pk2Aawl
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DggHQ/dggarchiver-config v0.0.0-20240702064918-3c25419d80f8 h1:5GqyYPCznKgxscNloxpathb580M6L49t8ZvDnpjwWKE=
 github.com/DggHQ/dggarchiver-config v0.0.0-20240702064918-3c25419d80f8/go.mod h1:0bek3YWF1JDlMSebG5KR7+dYr+nytrCTahvzbb30qVo=
+github.com/DggHQ/dggarchiver-config v0.0.0-20240717225419-54ff8d2573fe h1:MY7fursD+SDlTpzEifq8ygq1X3YJy53I1Ho6RrKmKog=
+github.com/DggHQ/dggarchiver-config v0.0.0-20240717225419-54ff8d2573fe/go.mod h1:0bek3YWF1JDlMSebG5KR7+dYr+nytrCTahvzbb30qVo=
 github.com/DggHQ/dggarchiver-model v0.0.0-20240701043726-064087a74466 h1:3y4MQ4VMnVV2/6ZFeZMgKmSV9FwmPm54Rb0PWzJtDPA=
 github.com/DggHQ/dggarchiver-model v0.0.0-20240701043726-064087a74466/go.mod h1:p1i5pIUtDhsoYfL7ViIdojIK6tAsJKxhbH55OOmBlmo=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=

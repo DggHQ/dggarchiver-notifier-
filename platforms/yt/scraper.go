@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
@@ -55,10 +56,22 @@ func NewScraper(cfg *config.Config, state *state.State) implementation.Platform 
 	// disable cookie handling to bypass youtube consent screen
 	c.DisableCookies()
 	c.AllowURLRevisit = true
+	if cfg.Platforms.YouTube.ProxyURL != "" {
+		if err := c.SetProxy(cfg.Platforms.YouTube.ProxyURL); err != nil {
+			slog.Error("unable to set proxy", slog.Any("err", err))
+			os.Exit(1)
+		}
+	}
 
 	c2 := colly.NewCollector()
 	c2.DisableCookies()
 	c2.AllowURLRevisit = true
+	if cfg.Platforms.YouTube.ProxyURL != "" {
+		if err := c2.SetProxy(cfg.Platforms.YouTube.ProxyURL); err != nil {
+			slog.Error("unable to set proxy", slog.Any("err", err))
+			os.Exit(1)
+		}
+	}
 
 	idChan := make(chan string)
 	infoChan := make(chan videoSchemaMicrodata)

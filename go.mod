@@ -3,8 +3,8 @@ module github.com/DggHQ/dggarchiver-notifier
 go 1.21
 
 require (
-	github.com/DggHQ/dggarchiver-config v0.0.0-20240718094214-f344d7a5b3b8
-	github.com/DggHQ/dggarchiver-model v0.0.0-20240718093510-3b74301ce748
+	github.com/DggHQ/dggarchiver-config v0.0.0-20240718103235-c0616ec0e80c
+	github.com/DggHQ/dggarchiver-model v0.0.0-20240718103025-03ef5d760d1e
 	github.com/bogdanfinn/fhttp v0.5.27
 	github.com/bogdanfinn/tls-client v1.7.2
 	github.com/containrrr/shoutrrr v0.8.0

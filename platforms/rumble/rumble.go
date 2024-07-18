@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -56,10 +57,22 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 	c1 := colly.NewCollector()
 	c1.DisableCookies()
 	c1.AllowURLRevisit = true
+	if cfg.Platforms.Rumble.ProxyURL != "" {
+		if err := c1.SetProxy(cfg.Platforms.Rumble.ProxyURL); err != nil {
+			slog.Error("unable to set proxy", slog.Any("err", err))
+			os.Exit(1)
+		}
+	}
 
 	c2 := colly.NewCollector()
 	c2.DisableCookies()
 	c2.AllowURLRevisit = true
+	if cfg.Platforms.Rumble.ProxyURL != "" {
+		if err := c2.SetProxy(cfg.Platforms.Rumble.ProxyURL); err != nil {
+			slog.Error("unable to set proxy", slog.Any("err", err))
+			os.Exit(1)
+		}
+	}
 
 	p := Platform{
 		vodChan:  vodChan,

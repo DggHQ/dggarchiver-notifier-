@@ -172,8 +172,10 @@ func (p *Platform) CheckLivestream() error {
 					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Rumble", vod.VID), &types.Params{
 						"title": "Received stream",
 					})
-					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+					for _, err := range errs {
+						if err != nil {
+							slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+						}
 					}
 				}
 
@@ -202,8 +204,10 @@ func (p *Platform) CheckLivestream() error {
 					errs := p.cfg.Notifications.Sender.Send(notifications.GetSendMessage(vod), &types.Params{
 						"title": "Sent stream",
 					})
-					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+					for _, err := range errs {
+						if err != nil {
+							slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+						}
 					}
 				}
 				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.VID))

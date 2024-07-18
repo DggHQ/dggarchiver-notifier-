@@ -247,6 +247,8 @@ func (p *Scraper) CheckLivestream() error {
 					StartTime:  vid.StartTime,
 					EndTime:    vid.EndTime,
 					Thumbnail:  vid.Thumbnail,
+					Quality:    p.cfg.Platforms.YouTube.Quality,
+					Tags:       p.cfg.Platforms.YouTube.Tags,
 				}
 
 				p.state.CurrentStreams.YouTube = *vod

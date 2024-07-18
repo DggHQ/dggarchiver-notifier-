@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	config "github.com/DggHQ/dggarchiver-config/notifier"
@@ -13,7 +14,6 @@ import (
 	"github.com/DggHQ/dggarchiver-notifier/state"
 	"github.com/DggHQ/dggarchiver-notifier/util"
 	"github.com/containrrr/shoutrrr/pkg/types"
-	"golang.org/x/exp/slices"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/youtube/v3"
 )
@@ -91,6 +91,8 @@ func (p *API) CheckLivestream() error {
 					StartTime: vid[0].LiveStreamingDetails.ActualStartTime,
 					EndTime:   vid[0].LiveStreamingDetails.ActualEndTime,
 					Thumbnail: vid[0].Snippet.Thumbnails.Medium.Url,
+					Quality:   p.cfg.Platforms.YouTube.Quality,
+					Tags:      p.cfg.Platforms.YouTube.Tags,
 				}
 
 				p.state.CurrentStreams.YouTube = *vod

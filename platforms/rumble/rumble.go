@@ -105,6 +105,8 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 						StartTime:   time.Now().Format(time.RFC3339),
 						EndTime:     "",
 						Thumbnail:   embedData.Thumbnail,
+						Quality:     p.cfg.Platforms.Rumble.Quality,
+						Tags:        p.cfg.Platforms.Rumble.Tags,
 					}
 				} else {
 					vodChan <- nil
@@ -131,6 +133,8 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 						StartTime:   time.Now().Format(time.RFC3339),
 						EndTime:     "",
 						Thumbnail:   embedData.Thumbnail,
+						Quality:     p.cfg.Platforms.Rumble.Quality,
+						Tags:        p.cfg.Platforms.Rumble.Tags,
 					}
 				} else {
 					vodChan <- nil

@@ -131,6 +131,8 @@ func (p *Platform) CheckLivestream() error {
 					StartTime:   time.Now().Format(time.RFC3339),
 					EndTime:     "",
 					Thumbnail:   strings.Split(strings.Split(stream.Livestream.Thumbnail.URL, ",")[0], " ")[0],
+					Quality:     p.cfg.Platforms.Kick.Quality,
+					Tags:        p.cfg.Platforms.Kick.Tags,
 				}
 
 				p.state.CurrentStreams.Kick = *vod

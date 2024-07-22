@@ -233,20 +233,25 @@ func (p *Scraper) CheckLivestream() error {
 					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("YouTube", id), &types.Params{
 						"title": "Received stream",
 					})
-					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", id), slog.Any("err", err))
+					for _, err := range errs {
+						if err != nil {
+							slog.Warn("unable to send notification", p.prefix, slog.String("id", id), slog.Any("err", err))
+						}
 					}
 				}
 
 				vod := &dggarchivermodel.VOD{
-					Platform:   "youtube",
-					Downloader: p.cfg.Platforms.YouTube.Downloader,
-					VID:        id,
-					PubTime:    vid.PubTime,
-					Title:      vid.Title,
-					StartTime:  vid.StartTime,
-					EndTime:    vid.EndTime,
-					Thumbnail:  vid.Thumbnail,
+					Platform:    "youtube",
+					Downloader:  p.cfg.Platforms.YouTube.Downloader,
+					VID:         id,
+					PubTime:     vid.PubTime,
+					Title:       vid.Title,
+					StartTime:   vid.StartTime,
+					EndTime:     vid.EndTime,
+					Thumbnail:   vid.Thumbnail,
+					Quality:     p.cfg.Platforms.YouTube.Quality,
+					Tags:        p.cfg.Platforms.YouTube.Tags,
+					WorkerProxy: p.cfg.Platforms.YouTube.WorkerProxyURL,
 				}
 
 				p.state.CurrentStreams.YouTube = *vod
@@ -274,8 +279,10 @@ func (p *Scraper) CheckLivestream() error {
 					errs := p.cfg.Notifications.Sender.Send(notifications.GetSendMessage(vod), &types.Params{
 						"title": "Sent stream",
 					})
-					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+					for _, err := range errs {
+						if err != nil {
+							slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+						}
 					}
 				}
 				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("youtube:%s", vod.VID))

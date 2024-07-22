@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -19,7 +20,6 @@ import (
 	"github.com/DggHQ/dggarchiver-notifier/util"
 	"github.com/containrrr/shoutrrr/pkg/types"
 	"github.com/gocolly/colly/v2"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -105,6 +105,9 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 						StartTime:   time.Now().Format(time.RFC3339),
 						EndTime:     "",
 						Thumbnail:   embedData.Thumbnail,
+						Quality:     p.cfg.Platforms.Rumble.Quality,
+						Tags:        p.cfg.Platforms.Rumble.Tags,
+						WorkerProxy: cfg.Platforms.Rumble.WorkerProxyURL,
 					}
 				} else {
 					vodChan <- nil
@@ -131,6 +134,9 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 						StartTime:   time.Now().Format(time.RFC3339),
 						EndTime:     "",
 						Thumbnail:   embedData.Thumbnail,
+						Quality:     p.cfg.Platforms.Rumble.Quality,
+						Tags:        p.cfg.Platforms.Rumble.Tags,
+						WorkerProxy: cfg.Platforms.Rumble.WorkerProxyURL,
 					}
 				} else {
 					vodChan <- nil
@@ -168,8 +174,10 @@ func (p *Platform) CheckLivestream() error {
 					errs := p.cfg.Notifications.Sender.Send(notifications.GetReceiveMessage("Rumble", vod.VID), &types.Params{
 						"title": "Received stream",
 					})
-					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+					for _, err := range errs {
+						if err != nil {
+							slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+						}
 					}
 				}
 
@@ -198,8 +206,10 @@ func (p *Platform) CheckLivestream() error {
 					errs := p.cfg.Notifications.Sender.Send(notifications.GetSendMessage(vod), &types.Params{
 						"title": "Sent stream",
 					})
-					for err := range errs {
-						slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+					for _, err := range errs {
+						if err != nil {
+							slog.Warn("unable to send notification", p.prefix, slog.String("id", vod.VID), slog.Any("err", err))
+						}
 					}
 				}
 				p.state.SentVODs = append(p.state.SentVODs, fmt.Sprintf("rumble:%s", vod.VID))

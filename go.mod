@@ -3,14 +3,13 @@ module github.com/DggHQ/dggarchiver-notifier
 go 1.21
 
 require (
-	github.com/DggHQ/dggarchiver-config v0.0.0-20240717225419-54ff8d2573fe
-	github.com/DggHQ/dggarchiver-model v0.0.0-20240701043726-064087a74466
+	github.com/DggHQ/dggarchiver-config v0.0.0-20240722035627-21836037a1e0
+	github.com/DggHQ/dggarchiver-model v0.0.0-20240722035243-bcb11567a7a8
 	github.com/bogdanfinn/fhttp v0.5.27
 	github.com/bogdanfinn/tls-client v1.7.2
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/nats-io/nats.go v1.34.0
-	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	google.golang.org/api v0.172.0
 )
 
@@ -57,6 +56,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect

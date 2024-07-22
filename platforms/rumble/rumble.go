@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -19,7 +20,6 @@ import (
 	"github.com/DggHQ/dggarchiver-notifier/util"
 	"github.com/containrrr/shoutrrr/pkg/types"
 	"github.com/gocolly/colly/v2"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -107,6 +107,7 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 						Thumbnail:   embedData.Thumbnail,
 						Quality:     p.cfg.Platforms.Rumble.Quality,
 						Tags:        p.cfg.Platforms.Rumble.Tags,
+						WorkerProxy: cfg.Platforms.Rumble.WorkerProxyURL,
 					}
 				} else {
 					vodChan <- nil
@@ -135,6 +136,7 @@ func New(cfg *config.Config, state *state.State) implementation.Platform {
 						Thumbnail:   embedData.Thumbnail,
 						Quality:     p.cfg.Platforms.Rumble.Quality,
 						Tags:        p.cfg.Platforms.Rumble.Tags,
+						WorkerProxy: cfg.Platforms.Rumble.WorkerProxyURL,
 					}
 				} else {
 					vodChan <- nil

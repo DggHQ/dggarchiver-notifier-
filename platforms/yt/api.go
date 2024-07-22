@@ -86,15 +86,16 @@ func (p *API) CheckLivestream() error {
 					}
 				}
 				vod := &dggarchivermodel.VOD{
-					Platform:  "youtube",
-					VID:       vid[0].Id,
-					PubTime:   vid[0].Snippet.PublishedAt,
-					Title:     vid[0].Snippet.Title,
-					StartTime: vid[0].LiveStreamingDetails.ActualStartTime,
-					EndTime:   vid[0].LiveStreamingDetails.ActualEndTime,
-					Thumbnail: vid[0].Snippet.Thumbnails.Medium.Url,
-					Quality:   p.cfg.Platforms.YouTube.Quality,
-					Tags:      p.cfg.Platforms.YouTube.Tags,
+					Platform:    "youtube",
+					VID:         vid[0].Id,
+					PubTime:     vid[0].Snippet.PublishedAt,
+					Title:       vid[0].Snippet.Title,
+					StartTime:   vid[0].LiveStreamingDetails.ActualStartTime,
+					EndTime:     vid[0].LiveStreamingDetails.ActualEndTime,
+					Thumbnail:   vid[0].Snippet.Thumbnails.Medium.Url,
+					Quality:     p.cfg.Platforms.YouTube.Quality,
+					Tags:        p.cfg.Platforms.YouTube.Tags,
+					WorkerProxy: p.cfg.Platforms.YouTube.WorkerProxyURL,
 				}
 
 				p.state.CurrentStreams.YouTube = *vod

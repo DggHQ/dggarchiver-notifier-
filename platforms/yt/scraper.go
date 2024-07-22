@@ -241,16 +241,17 @@ func (p *Scraper) CheckLivestream() error {
 				}
 
 				vod := &dggarchivermodel.VOD{
-					Platform:   "youtube",
-					Downloader: p.cfg.Platforms.YouTube.Downloader,
-					VID:        id,
-					PubTime:    vid.PubTime,
-					Title:      vid.Title,
-					StartTime:  vid.StartTime,
-					EndTime:    vid.EndTime,
-					Thumbnail:  vid.Thumbnail,
-					Quality:    p.cfg.Platforms.YouTube.Quality,
-					Tags:       p.cfg.Platforms.YouTube.Tags,
+					Platform:    "youtube",
+					Downloader:  p.cfg.Platforms.YouTube.Downloader,
+					VID:         id,
+					PubTime:     vid.PubTime,
+					Title:       vid.Title,
+					StartTime:   vid.StartTime,
+					EndTime:     vid.EndTime,
+					Thumbnail:   vid.Thumbnail,
+					Quality:     p.cfg.Platforms.YouTube.Quality,
+					Tags:        p.cfg.Platforms.YouTube.Tags,
+					WorkerProxy: p.cfg.Platforms.YouTube.WorkerProxyURL,
 				}
 
 				p.state.CurrentStreams.YouTube = *vod

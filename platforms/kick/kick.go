@@ -135,6 +135,7 @@ func (p *Platform) CheckLivestream() error {
 					Thumbnail:   strings.Split(strings.Split(stream.Livestream.Thumbnail.URL, ",")[0], " ")[0],
 					Quality:     p.cfg.Platforms.Kick.Quality,
 					Tags:        p.cfg.Platforms.Kick.Tags,
+					WorkerProxy: p.cfg.Platforms.Kick.WorkerProxyURL,
 				}
 
 				p.state.CurrentStreams.Kick = *vod
